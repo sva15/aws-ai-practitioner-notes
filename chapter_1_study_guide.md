@@ -97,22 +97,44 @@
 
 *   **Common Algorithms (Explained using the Fraud Table)**:
 
-    *   **1. Logistic Regression (The "Risk Score" Calculator)**
-        *   *Concept*: It doesn't just say "Yes" or "No". It calculates a score based on weights and converts it to a probability (0% to 100%). The "S-Curve" is simply the math function that squashes any score into this 0-100% range.
-        *   *Example with Data*:
-            *   **Row 2 ($7500, 3 AM)**: The model adds points for High Amount (+5) and Weird Time (+3). Total Score = 8. -> **Probability: 99% Fraud**.
-            *   **Row 3 ($15, 12 PM)**: Low Amount (0) + Normal Time (0). Total Score = 0. -> **Probability: 1% Fraud**.
-        *   *Decision*: If Probability > 50%, call it Fraud.
+    *   **1. Logistic Regression (The "Probability Calculator")**
+        *   *Concept*: It doesn't just say "Yes" or "No". It calculates a weighted score and converts it to a probability (0% to 100%) using the "Sigmoid" (S-Curve) function.
+        *   *Analogy*: Think of a spam email filter calculating "spamminess".
+        *   *Example: Email Spam Classification*:
+            *   **Features**: Number of exclamation marks, contains "FREE", sender reputation score.
+            *   **Email A**: "FREE iPhone!!! Click NOW!!!" (3 exclamations, "FREE" present, unknown sender).
+                *   Weights: Exclamations (+2 each), "FREE" (+5), Unknown Sender (+3).
+                *   Score = 6 + 5 + 3 = 14 -> **Probability: 99% Spam**.
+            *   **Email B**: "Meeting tomorrow at 3 PM." (0 exclamations, no trigger words, known sender).
+                *   Score = 0 -> **Probability: 2% Spam**.
+        *   *Decision*: If Probability > 50%, classify as Spam.
+        *   *Why It's Useful*: Gives you a confidence level ("I'm 87% sure this is spam") instead of just a hard yes/no.
 
     *   **2. Decision Trees (The "Flowchart")**
-        *   *Concept*: Splits data step-by-step like a game of "20 Questions" to isolate the fraud.
-        *   *Example with Data*:
-            *   **Question 1**: "Is Amount > $1,000?"
-                *   **YES**: -> **Row 2 ($7500) is Fraud**. (Caught the big theft).
-                *   **NO**: -> Go to Question 2.
-            *   **Question 2**: "Is Time between 1 AM and 5 AM?"
-                *   **YES**: -> **Row 4 ($10, 4 AM) is Fraud**. (Caught the small nighttime theft).
-                *   **NO**: -> **Rows 1, 3, 5 are Legitimate**.
+        *   *Concept*: Splits data step-by-step using simple Yes/No questions, like a game of "20 Questions".
+        *   *Analogy*: A bank's loan approval checklist.
+        *   *Example: Should We Approve This Loan?*:
+            ```
+            [Start: Loan Application]
+                    |
+            Q1: Is Credit Score >= 700?
+              /           \
+            YES            NO
+             |              |
+            Q2: Is Debt-to-Income < 40%?
+              /       \           \
+            YES        NO          -> DENY (High Risk)
+             |          |
+           APPROVE   Q3: Is Employment Stable (>2 years)?
+                        /       \
+                      YES        NO
+                       |          |
+                   APPROVE (Conditional)  DENY
+            ```
+        *   **Applicant A** (Credit: 750, DTI: 35%): Follows YES -> YES -> **APPROVED**.
+        *   **Applicant B** (Credit: 620, DTI: 50%): Follows NO -> **DENIED** immediately.
+        *   **Applicant C** (Credit: 720, DTI: 45%, Employed 5 years): YES -> NO -> YES -> **APPROVED (Conditional)**.
+        *   *Why It's Useful*: Highly interpretable. You can explain *exactly* why a decision was made ("Denied because Credit Score < 700").
 
     *   **3. Random Forests (The "Council of Detectives")**
         *   *Concept*: A single Decision Tree might make a mistake (e.g., ignoring Location). A Random Forest creates 100 "Junior Detectives" (Trees). Each looks at a *random subset* of the data rules. They vote.
